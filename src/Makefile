@@ -31,11 +31,18 @@ apk-objs		:= apk.o \
 			   app_index.o app_fetch.o app_verify.o app_dot.o \
 			   app_audit.o
 
-libapk.so-objs		:= common.o database.o package.o commit.o solver.o \
+libapk.so-objs		:= adb.o adb_trust.o \
+			   common.o database.o package.o commit.o solver.o \
 			   version.o blob.o hash.o print.o \
 			   io.o io_url.o io_gunzip.o io_archive.o
 
 libapk.so-libs		:= libfetch/libfetch.a
+
+ifeq ($(ADB),y)
+libapk.so-objs		+= apk_adb.o apk_adbschema.o
+apk-objs		+= app_adbdump.o app_adbsign.o app_mkndx.o \
+			   app_convdb.o app_convndx.o
+endif
 
 ifeq ($(TEST),y)
 progs-y			+= apk-test
