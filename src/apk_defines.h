@@ -71,37 +71,53 @@ static inline int IS_ERR_OR_NULL(const void *ptr) { return IS_ERR(ptr) || !ptr; 
 
 /* default architecture for APK packages. */
 #if defined(__x86_64__)
-#define APK_DEFAULT_ARCH        "x86_64"
+#define APK_DEFAULT_ARCH	"x86_64"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__i386__)
-#define APK_DEFAULT_ARCH        "x86"
+#define APK_DEFAULT_ARCH	"x86"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__powerpc__) && !defined(__powerpc64__)
 #define APK_DEFAULT_ARCH	"ppc"
+#define APK_DEFAULT_ENDIAN	"big"
 #elif defined(__powerpc64__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define APK_DEFAULT_ARCH	"ppc64"
+#define APK_DEFAULT_ENDIAN	"big"
 #elif defined(__powerpc64__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define APK_DEFAULT_ARCH	"ppc64le"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__arm__) && defined(__ARM_PCS_VFP) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ && __ARM_ARCH>=7
 #define APK_DEFAULT_ARCH	"armv7"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__arm__) && defined(__ARM_PCS_VFP) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define APK_DEFAULT_ARCH	"armhf"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__arm__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define APK_DEFAULT_ARCH	"armel"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__aarch64__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define APK_DEFAULT_ARCH	"aarch64"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__s390x__)
 #define APK_DEFAULT_ARCH	"s390x"
+#define APK_DEFAULT_ENDIAN	"big"
 #elif defined(__mips64) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define APK_DEFAULT_ARCH	"mips64"
+#define APK_DEFAULT_ENDIAN	"big"
 #elif defined(__mips64) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define APK_DEFAULT_ARCH	"mips64el"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__mips__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define APK_DEFAULT_ARCH	"mips"
+#define APK_DEFAULT_ENDIAN	"big"
 #elif defined(__mips__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define APK_DEFAULT_ARCH	"mipsel"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__riscv) && __riscv_xlen == 32
 #define APK_DEFAULT_ARCH	"riscv32"
+#define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__riscv) && __riscv_xlen == 64
 #define APK_DEFAULT_ARCH	"riscv64"
+#define APK_DEFAULT_ENDIAN	"little"
 #else
 #error APK_DEFAULT_ARCH not detected for this architecture
 #endif

@@ -73,6 +73,7 @@ static void version(struct apk_out *out, const char *prefix)
 	OPT(OPT_GLOBAL_no_network,		"no-network") \
 	OPT(OPT_GLOBAL_no_progress,		"no-progress") \
 	OPT(OPT_GLOBAL_print_arch,		"print-arch") \
+	OPT(OPT_GLOBAL_print_endian,	"print-endian") \
 	OPT(OPT_GLOBAL_progress,		"progress") \
 	OPT(OPT_GLOBAL_progress_fd,		APK_OPT_ARG "progress-fd") \
 	OPT(OPT_GLOBAL_purge,			"purge") \
@@ -190,6 +191,9 @@ static int option_parse_global(void *ctx, struct apk_ctx *ac, int opt, const cha
 		break;
 	case OPT_GLOBAL_print_arch:
 		puts(APK_DEFAULT_ARCH);
+		return -ESHUTDOWN;
+	case OPT_GLOBAL_print_endian:
+		puts(APK_DEFAULT_ENDIAN);
 		return -ESHUTDOWN;
 #ifdef TEST_MODE
 	case OPT_GLOBAL_test_repo:
