@@ -52,10 +52,10 @@ static const char * const apkindex_tar_gz = "APKINDEX.tar.gz";
 static const char * const apk_static_cache_dir = "var/cache/apk";
 static const char * const apk_world_file = "etc/apk/world";
 static const char * const apk_arch_file = "etc/apk/arch";
-static const char * const apk_lock_file = "lib/apk/db/lock";
-static const char * const apk_scripts_file = "lib/apk/db/scripts.tar";
-static const char * const apk_triggers_file = "lib/apk/db/triggers";
-const char * const apk_installed_file = "lib/apk/db/installed";
+static const char * const apk_lock_file = "usr/lib/apk/db/lock";
+static const char * const apk_scripts_file = "usr/lib/apk/db/scripts.tar";
+static const char * const apk_triggers_file = "usr/lib/apk/db/triggers";
+const char * const apk_installed_file = "usr/lib/apk/db/installed";
 
 static struct apk_db_acl *apk_default_acl_dir, *apk_default_acl_file;
 
@@ -1327,9 +1327,9 @@ static int apk_db_create(struct apk_database *db)
 	mknodat(db->root_fd, "dev/console", S_IFCHR | 0600, makedev(5, 1));
 	mkdirat(db->root_fd, "etc", 0755);
 	mkdirat(db->root_fd, "etc/apk", 0755);
-	mkdirat(db->root_fd, "lib", 0755);
-	mkdirat(db->root_fd, "lib/apk", 0755);
-	mkdirat(db->root_fd, "lib/apk/db", 0755);
+	mkdirat(db->root_fd, "usr/lib", 0755);
+	mkdirat(db->root_fd, "usr/lib/apk", 0755);
+	mkdirat(db->root_fd, "usr/lib/apk/db", 0755);
 	mkdirat(db->root_fd, "var", 0755);
 	mkdirat(db->root_fd, "var/cache", 0755);
 	mkdirat(db->root_fd, "var/cache/apk", 0755);
