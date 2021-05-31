@@ -4,7 +4,7 @@
 -include config.mk
 
 PACKAGE := apk-tools
-VERSION := 2.12.0
+VERSION := 4.0.0
 
 export VERSION
 
@@ -12,8 +12,8 @@ export VERSION
 # Default directories
 
 DESTDIR		:=
-SBINDIR		:= /sbin
-LIBDIR		:= /lib
+SBINDIR		:= /usr/bin
+LIBDIR		:= /usr/lib
 CONFDIR		:= /etc/apk
 MANDIR		:= /usr/share/man
 DOCDIR		:= /usr/share/doc/apk

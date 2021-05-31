@@ -550,7 +550,7 @@ int apk_sign_ctx_process_file(struct apk_sign_ctx *ctx,
 		if (ctx->has_data_checksum)
 			return -ENOMSG;
 		/* Error out early if identity part is missing */
-		if (!(apk_flags & APK_ALLOW_UNTRUSTED) && ctx->action == APK_SIGN_VERIFY_IDENTITY)
+		if (!ctx->allow_untrusted && ctx->action == APK_SIGN_VERIFY_IDENTITY)
 			return -EKEYREJECTED;
 		ctx->data_started = 1;
 		ctx->control_started = 1;
@@ -669,7 +669,7 @@ int apk_sign_ctx_mpart_cb(void *ctx, int part, apk_blob_t data)
 		goto update_digest;
 
 	/* Still in signature blocks? */
-	if (!(apk_flags & APK_ALLOW_UNTRUSTED) && !sctx->control_started) {
+	if (!sctx->allow_untrusted && !sctx->control_started) {
 		if (part == APK_MPART_END)
 			return -EKEYREJECTED;
 		goto reset_digest;
@@ -691,7 +691,7 @@ int apk_sign_ctx_mpart_cb(void *ctx, int part, apk_blob_t data)
 	if (sctx->has_data_checksum && !end_of_control) {
 		/* End of data-block with a checksum read from the control block */
 		EVP_DigestFinal_ex(sctx->mdctx, calculated, NULL);
-		if (!(apk_flags & APK_ALLOW_UNTRUSTED) && EVP_MD_CTX_size(sctx->mdctx) == 0 ||
+		if (!sctx->allow_untrusted && EVP_MD_CTX_size(sctx->mdctx) == 0 ||
 		    memcmp(calculated, sctx->data_checksum,
 		           EVP_MD_CTX_size(sctx->mdctx)) != 0)
 			return -EKEYREJECTED;
@@ -736,7 +736,7 @@ int apk_sign_ctx_mpart_cb(void *ctx, int part, apk_blob_t data)
 	case APK_SIGN_VERIFY_IDENTITY:
 		/* Reset digest for hashing data */
 		EVP_DigestFinal_ex(sctx->mdctx, calculated, NULL);
-		if (!(apk_flags & APK_ALLOW_UNTRUSTED) && memcmp(calculated, sctx->identity.data,
+		if (!sctx->allow_untrusted && memcmp(calculated, sctx->identity.data,
 			   sctx->identity.type) != 0)
 			return -EKEYREJECTED;
 		sctx->control_verified = 1;
