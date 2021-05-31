@@ -611,6 +611,14 @@ int apk_sign_ctx_parse_pkginfo_line(void *ctx, apk_blob_t line)
 	if (!apk_blob_split(line, APK_BLOB_STR(" = "), &l, &r))
 		return 0;
 
+	if (apk_blob_compare(APK_BLOB_STR("b2sum"), l) == 0) {
+		sctx->has_data_checksum = 1;
+		sctx->md = EVP_blake2b512();
+		apk_blob_pull_hexdump(
+			&r, APK_BLOB_PTR_LEN(sctx->data_checksum,
+					     EVP_MD_size(sctx->md)));
+	}
+
 	if (apk_blob_compare(APK_BLOB_STR("datahash"), l) == 0) {
 		sctx->has_data_checksum = 1;
 		sctx->md = EVP_sha256();
