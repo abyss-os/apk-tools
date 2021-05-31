@@ -1327,6 +1327,7 @@ static int apk_db_create(struct apk_database *db)
 	mknodat(db->root_fd, "dev/console", S_IFCHR | 0600, makedev(5, 1));
 	mkdirat(db->root_fd, "etc", 0755);
 	mkdirat(db->root_fd, "etc/apk", 0755);
+	mkdirat(db->root_fd, "usr", 0755);
 	mkdirat(db->root_fd, "usr/lib", 0755);
 	mkdirat(db->root_fd, "usr/lib/apk", 0755);
 	mkdirat(db->root_fd, "usr/lib/apk/db", 0755);
