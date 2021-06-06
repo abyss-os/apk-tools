@@ -49,28 +49,3 @@ static inline int is_group(struct apk_applet *applet, const char *topic)
 		if (strcasecmp(applet->optgroups[i]->desc, topic) == 0) return 1;
 	return 0;
 }
-
-void apk_applet_help(struct apk_applet *applet, struct apk_out *out)
-{
-#include "help.h"
-
-#ifndef NO_HELP
-	char buf[uncompressed_help_size], *ptr, *msg;
-	unsigned long len = sizeof buf;
-	int num = 0;
-
-	uncompress((unsigned char*) buf, &len, compressed_help, sizeof compressed_help);
-	for (ptr = buf; *ptr && ptr < &buf[len]; ptr = msg + strlen(msg) + 1) {
-		msg = ptr + strlen(ptr) + 1;
-		if (is_group(applet, ptr)) {
-			fputc('\n', stdout);
-			fwrite(msg, strlen(msg), 1, stdout);
-			num++;
-		}
-	}
-	if (num == 0) apk_err(out, "Help not found");
-#else
-	fputc('\n', stdout);
-	apk_err(out, "This apk-tools has been built without help");
-#endif
-}

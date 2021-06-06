@@ -29,29 +29,11 @@
 #include "apk_print.h"
 #include "apk_io.h"
 
-#ifdef TEST_MODE
-static const char *test_installed_db = NULL;
-static const char *test_world = NULL;
-static struct apk_string_array *test_repos;
-#endif
-
 char **apk_argv;
-
-#ifdef TEST_MODE
-time_t time(time_t *tloc)
-{
-	const time_t val = 1559567666;
-	if (tloc) *tloc = val;
-	return val;
-}
-#endif
 
 static void version(struct apk_out *out, const char *prefix)
 {
 	apk_out_fmt(out, prefix, "apk-tools " APK_VERSION ", compiled for " APK_DEFAULT_ARCH ".");
-#ifdef TEST_MODE
-	apk_out_fmt(out, prefix, "TEST MODE BUILD. NOT FOR PRODUCTION USE.");
-#endif
 }
 
 #define GLOBAL_OPTIONS(OPT) \
@@ -84,19 +66,9 @@ static void version(struct apk_out *out, const char *prefix)
 	OPT(OPT_GLOBAL_update_cache,		APK_OPT_SH("U") "update-cache") \
 	OPT(OPT_GLOBAL_verbose,			APK_OPT_SH("v") "verbose") \
 	OPT(OPT_GLOBAL_version,			APK_OPT_SH("V") "version") \
-	OPT(OPT_GLOBAL_wait,			APK_OPT_ARG "wait") \
+	OPT(OPT_GLOBAL_wait,			APK_OPT_ARG "wait")
 
-#define TEST_OPTIONS(OPT) \
-	OPT(OPT_GLOBAL_test_instdb,		APK_OPT_ARG "test-instdb") \
-	OPT(OPT_GLOBAL_test_repo,		APK_OPT_ARG "test-repo") \
-	OPT(OPT_GLOBAL_test_world,		APK_OPT_ARG "test-world")
-
-
-#ifdef TEST_MODE
-APK_OPT_GROUP2(optiondesc_global, "Global", GLOBAL_OPTIONS, TEST_OPTIONS);
-#else
 APK_OPT_GROUP(optiondesc_global, "Global", GLOBAL_OPTIONS);
-#endif
 
 static int option_parse_global(void *ctx, struct apk_ctx *ac, int opt, const char *optarg)
 {
@@ -195,17 +167,6 @@ static int option_parse_global(void *ctx, struct apk_ctx *ac, int opt, const cha
 	case OPT_GLOBAL_print_endian:
 		puts(APK_DEFAULT_ENDIAN);
 		return -ESHUTDOWN;
-#ifdef TEST_MODE
-	case OPT_GLOBAL_test_repo:
-		*apk_string_array_add(&test_repos) = (char*) optarg;
-		break;
-	case OPT_GLOBAL_test_instdb:
-		test_installed_db = optarg;
-		break;
-	case OPT_GLOBAL_test_world:
-		test_world = optarg;
-		break;
-#endif
 	default:
 		return -ENOTSUP;
 	}
@@ -265,7 +226,6 @@ const struct apk_option_group optgroup_commit = {
 static int usage(struct apk_out *out, struct apk_applet *applet)
 {
 	version(out, NULL);
-	apk_applet_help(applet, out);
 	return 1;
 }
 
@@ -407,9 +367,6 @@ int main(int argc, char **argv)
 	int r;
 
 	apk_string_array_init(&args);
-#ifdef TEST_MODE
-	apk_string_array_init(&test_repos);
-#endif
 	apk_applet_register_builtin();
 
 	apk_argv = malloc(sizeof(char*[argc+2]));
@@ -438,7 +395,7 @@ int main(int argc, char **argv)
 
 	if (applet == NULL) {
 		if (argc > 1) {
-			apk_err(out, "'%s' is not an apk command. See 'apk --help'.", argv[1]);
+			apk_err(out, "'%s' is not an apk command.", argv[1]);
 			return 1;
 		}
 		return usage(out, NULL);
@@ -454,13 +411,6 @@ int main(int argc, char **argv)
 	apk_db_init(&db);
 	signal(SIGINT, on_sigint);
 
-#ifdef TEST_MODE
-	ctx.open_flags &= ~(APK_OPENF_WRITE | APK_OPENF_CACHE_WRITE | APK_OPENF_CREATE);
-	ctx.open_flags |= APK_OPENF_READ | APK_OPENF_NO_STATE | APK_OPENF_NO_REPOS;
-	ctx.flags |= APK_SIMULATE;
-	ctx.flags &= ~APK_INTERACTIVE;
-#endif
-
 	r = apk_ctx_prepare(&ctx);
 	if (r != 0) goto err;
 
@@ -475,55 +425,11 @@ int main(int argc, char **argv)
 		}
 	}
 
-#ifdef TEST_MODE
-	if (test_world != NULL) {
-		apk_blob_t b = APK_BLOB_STR(test_world);
-		apk_blob_pull_deps(&b, &db, &db.world);
-	}
-	if (test_installed_db != NULL) {
-		apk_db_index_read(&db, apk_istream_from_file(AT_FDCWD, test_installed_db), -1);
-	}
-	for (int i = 0; i < test_repos->num; i++) {
-		apk_blob_t spec = APK_BLOB_STR(test_repos->item[i]), name, tag;
-		int repo_tag = 0, repo = APK_REPOSITORY_FIRST_CONFIGURED + i;
-
-		if (spec.ptr[0] == '!') {
-			/* cache's installed repository */
-			spec.ptr++;
-			spec.len--;
-			repo = -2;
-		}
-
-		if (apk_blob_split(spec, APK_BLOB_STR(":"), &tag, &name)) {
-			repo_tag = apk_db_get_tag_id(&db, tag);
-		} else {
-			name = spec;
-		}
-
-		r = apk_db_index_read(&db, apk_istream_from_file(AT_FDCWD, name.ptr), repo);
-		if (r != 0) {
-			apk_err(out, "Failed to open repository " BLOB_FMT " : %s", BLOB_PRINTF(name), apk_error_str(r));
-			goto err;
-		}
-
-		if (repo != -2) {
-			if (!(ctx.flags & APK_NO_NETWORK))
-				db.available_repos |= BIT(repo);
-			db.repo_tags[repo_tag].allowed_repos |= BIT(repo);
-		}
-	}
-#endif
-
 	apk_string_array_resize(&args, argc);
 	memcpy(args->item, argv, argc * sizeof(*argv));
 
 	r = applet->main(applet_ctx, &ctx, args);
 	apk_db_close(&db);
-
-#ifdef TEST_MODE
-	/* in test mode, we need to always exit 0 since xargs dies otherwise */
-	r = 0;
-#endif
 
 err:
 	if (r == -ESHUTDOWN) r = 0;

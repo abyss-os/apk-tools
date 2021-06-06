@@ -1,13 +1,4 @@
 PKG_CONFIG		?= pkg-config
-LUA			?= $(firstword $(wildcard /usr/bin/lua5.3 /usr/bin/lua5.2))
-
-ifeq ($(LUA),no)
-LUAAPK			?= no
-else ifneq ($(LUA),)
-LUAAPK			?= yes
-else
-$(error Lua interpreter not found. Please specify LUA interpreter, or use LUA=no to build without help.)
-endif
 
 OPENSSL_CFLAGS		:= $(shell $(PKG_CONFIG) --cflags openssl)
 OPENSSL_LIBS		:= $(shell $(PKG_CONFIG) --libs openssl)
@@ -42,20 +33,6 @@ libapk_a		:= $(obj)/libapk.a
 install-libapk_a	:= $(INSTALLDIR) $(DESTDIR)$(LIBDIR) && \
 			   $(INSTALL) $(libapk_a) $(DESTDIR)$(LIBDIR)
 apk-static-libs		:= $(libapk.a-libs) $(obj)/libapk.a
-
-# Lua module
-ifeq ($(LUAAPK),yes)
-LUA_VERSION		?= 5.3
-LUA_PC			?= lua$(LUA_VERSION)
-LUA_LIBDIR		?= /usr/lib/lua/$(LUA_VERSION)
-shlibs-y		+= apk.so
-apk.so-objs		:= lua-apk.o
-CFLAGS_lua-apk.o	:= -DAPK_VERSION=\"$(VERSION)\" \
-			   $(shell $(PKG_CONFIG) $(LUA_PC) --cflags)
-apklua_so		:= $(obj)/apk.so
-install-apklua_so	:= $(INSTALLDIR) $(DESTDIR)$(LUA_LIBDIR) && \
-			   $(INSTALL) $(apklua_so) $(DESTDIR)$(LUA_LIBDIR)
-endif
 
 # Apk utility
 progs-y			+= apk
@@ -95,21 +72,6 @@ LIBS			:= -Wl,--as-needed \
 				$(OPENSSL_LIBS) $(ZLIB_LIBS) \
 			   -Wl,--no-as-needed
 
-# Help generation
-quiet_cmd_genhelp = GENHELP $@
-ifneq ($(LUA),no)
-      cmd_genhelp = $(LUA) $(src)/genhelp.lua $(filter %.scd, $^) > $@
-else
-      cmd_genhelp = echo \\\#define NO_HELP > $@
-endif
-
-$(obj)/help.h: $(src)/genhelp.lua $(wildcard doc/apk*.8.scd) FORCE
-	$(call if_changed,genhelp)
-
-CFLAGS_help.o		:= -I$(obj)
-
-generate-y		+= help.h
-
 # Test build
 ifeq ($(TEST),y)
 progs-y			+= apk-test
@@ -129,12 +91,11 @@ $(obj)/libapk.so:
 
 generate-y	+= apk.pc
 
-install: $(obj)/apk $(libapk_so) $(libapk_a) $(apklua_so)
+install: $(obj)/apk $(libapk_so) $(libapk_a)
 	$(INSTALLDIR) $(DESTDIR)$(SBINDIR)
 	$(INSTALL) $(obj)/apk $(DESTDIR)$(SBINDIR)
 	$(install-libapk_so)
 	$(install-libapk_a)
-	$(install-apklua_so)
 	$(INSTALLDIR) $(DESTDIR)$(INCLUDEDIR)/apk
 	$(INSTALL) -m644 src/*.h $(DESTDIR)$(INCLUDEDIR)/apk
 	$(INSTALLDIR) $(DESTDIR)$(PKGCONFIGDIR)

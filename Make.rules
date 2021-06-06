@@ -5,8 +5,6 @@ default: compile
 
 all: compile docs
 
-test check:
-
 ifndef build
 
 toplevelrun:=yes
@@ -55,7 +53,7 @@ CC		:= clang
 AR		:= ar
 LD		:= ld
 LN		:= ln -sf
-SCDOC		:= scdoc
+SCDOC	:= scdoc
 SED		:= sed
 INSTALL		:= install
 INSTALLDIR	:= $(INSTALL) -d
