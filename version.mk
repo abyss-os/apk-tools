@@ -1,4 +1,4 @@
-GIT_VERSION != git describe --tags | sed 's/^v//'
+GIT_VERSION != git describe --tags --abbrev=0 | sed 's/^v//'
 
 ifdef $(VERSION)
     VERSION := $(VERSION)
