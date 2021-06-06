@@ -49,34 +49,11 @@ objtree		:= $(CURDIR)
 export srctree objtree
 
 ##
-# Consult SCM for better version string.
-
-TAGPREFIX	?= v
-
-ifneq ($(CI_COMMIT_TAG),)
-FULL_VERSION	:= $(CI_COMMIT_TAG)
-else ifneq ($(CI_COMMIT_REF_NAME),)
-# GitLab but no tag info, use the 'git describe' from environment variable
-# once https://gitlab.com/gitlab-org/gitlab-runner/-/merge_requests/1633
-# gets completed and merged upstream.
-FULL_VERSION	:= $(VERSION)
-else ifneq ($(wildcard .git),)
-FULL_VERSION	:= $(patsubst $(TAGPREFIX)%,%,$(shell git describe))
-else
-FULL_VERSION	:= $(VERSION)
-endif
-
-RCS_FIND_IGNORE := \( -name SCCS -o -name BitKeeper -o -name .svn -o -name CVS -o -name .pc -o -name .hg -o -name .git \) -prune -o
-
-export FULL_VERSION RCS_FIND_IGNORE
-
-##
 # Utilities and default flags for them.
 
-CROSS_COMPILE	?=
-CC		:= $(CROSS_COMPILE)gcc
-AR		:= $(CROSS_COMPILE)ar
-LD		:= $(CROSS_COMPILE)ld
+CC		:= clang
+AR		:= ar
+LD		:= ld
 LN		:= ln -sf
 SCDOC		:= scdoc
 SED		:= sed
@@ -360,17 +337,6 @@ endif
 			$(libs-y) $(libs-n) $(libs-) \
 			$(generate-y) $(generate-n) $(generate-) \
 			$(scdocs-y) $(scdocs-n) $(scdocs-)))
-
-ifeq ($(origin VERSION),command line)
-DIST_VERSION=$(VERSION)
-else
-DIST_VERSION=$(FULL_VERSION)
-endif
-
-dist:
-	git archive --format tar --prefix=$(PACKAGE)-$(DIST_VERSION)/ \
-		$(TAGPREFIX)$(DIST_VERSION) \
-		| bzip2 -9 > $(PACKAGE)-$(DIST_VERSION).tar.bz2
 
 FORCE:
 
