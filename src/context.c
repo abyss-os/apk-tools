@@ -60,6 +60,7 @@ int apk_ctx_prepare(struct apk_ctx *ac)
 		const int lflags = O_WRONLY | O_APPEND | O_CREAT | O_CLOEXEC;
 		int fd = openat(ac->root_fd, log_path, lflags, 0644);
 		if (fd < 0 && (ac->open_flags & APK_OPENF_CREATE)) {
+            mkdirat(ac->root_fd, "var", 0755);
 			mkdirat(ac->root_fd, log_dir, 0755);
 			fd = openat(ac->root_fd, log_path, lflags, 0644);
 		}
