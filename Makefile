@@ -23,7 +23,7 @@ export DESTDIR SBINDIR LIBDIR CONFDIR MANDIR DOCDIR INCLUDEDIR PKGCONFIGDIR
 ##
 # Top-level subdirs
 
-subdirs		:= libfetch/ src/ doc/
+subdirs		:= libfetch/ src/
 
 ##
 # Include all rules and stuff
