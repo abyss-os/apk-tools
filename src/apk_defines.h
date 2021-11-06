@@ -71,7 +71,11 @@ static inline int IS_ERR_OR_NULL(const void *ptr) { return IS_ERR(ptr) || !ptr; 
 
 /* default architecture for APK packages. */
 #if defined(__x86_64__)
+#if defined(__ILP32__)
+#define APK_DEFAULT_ARCH    "x86_32"
+#else
 #define APK_DEFAULT_ARCH	"x86_64"
+#endif
 #define APK_DEFAULT_ENDIAN	"little"
 #elif defined(__i386__)
 #define APK_DEFAULT_ARCH	"x86"
